@@ -77,14 +77,14 @@ could be a performance concern.
 
 ## Syntax
 
-This proposal adds a new keyword `union` to the Go language. This keyword is legal anywhere the `struct`
-keyword is, and its constructions are identical.
+This proposal add no new keywords, but instead, the new construction `struct inteface`. This construction is legal anywhere the `struct`
+keyword is, and its following constructions are identical.
 
 ### Definition
 
 ```go
-type Foo union {
-    Bar int
+type Foo struct interface {
+    default Bar int
     Baz float
     UserType
 }
@@ -96,8 +96,11 @@ A union can have any many fields as the user chooses, including none, though har
 
 There are no restrictions on the types that can appear in a union.
 
+The `default` keyword indicates which choice is used for hte Zero Value, and is required to be present on one and only one field.
+
+
 ```go
-func foo(bar union{Bar int, Baz float}) {
+func foo(bar struct interface{Bar int, Baz float}) {
     // ...
 }
 ```
@@ -152,16 +155,18 @@ is in is executed. The default case is executed if no cases match the current st
 
 ### Zero Value
 
-The Zero Value of a union is one which is in the state of its first field, having its Zero Value.
+Unions, like structs, cannot be nil.
+
+The Zero Value of a union is one which is in the state of the field bearing the `default` keyword, having its own Zero Value.
 
 ### Empty Union
 
-`union{}` is valid both syntatically, and semantically. Semantically, it represents the "impossible
+`struct interface{}` is valid both syntatically, and semantically. Semantically, it represents the "impossible
 type", which cannot be constructed, since a union must always be in one and only one of its states.
-Because it cannot be constructed, `union{}` can never be returned, passed as an argument, or assigned
+Because it cannot be constructed, `struct interface{}` can never be returned, passed as an argument, or assigned
 to a constant or variable. While it may at first glance be tempting to disallow this, it actually
 has a use: Functions which never return. A function which returns nothing is amgiguous whether it
-returns at all, or always panics. A function with `union{}` as the return type, on the other hand, can
+returns at all, or always panics. A function with `struct interface{}` as the return type, on the other hand, can
 never return, since it is impossible to construct a value with that type. As such, that function is guarnateed to panic on all code paths, and the builtin `panic()` function may even be considered to return 
 it.
 
@@ -212,3 +217,9 @@ type Type interface {
 The methods `Field`, `FieldByIndex`, `FieldByName`, and `FieldByNameFunc`, of interface `Type` are usable with unions, and return the field information as they would for a struct.
 
 The methods `Field`, `FieldByIndex`, `FieldByIndexErr`, `FieldByName`, and `FieldByNameFunc` of struct `Value` are usable with unions. If the union is currently in the state of the corresponding field, the value is returned as normal, and panics otherwise.
+
+
+## Changelog
+
+* Replaced new keyword `union` with `struct interface` to preserve backwards compatility
+* Addeded `default <field>` construction to allow zero value to be configurable
